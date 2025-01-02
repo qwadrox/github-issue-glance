@@ -83,18 +83,16 @@ class IssueManager {
       },
       domLayout: 'autoHeight',
       onGridReady: (params) => {
-        this.gridApi = params.api // Store the API reference
-        this.loadIssues() // Load data once grid is ready
+        this.gridApi = params.api 
+        this.loadIssues()
       },
     }
 
-    // Initialize the grid
-    const gridDiv = document.querySelector<HTMLElement>('#issues-container')
+    const gridDiv = document.querySelector<HTMLElement>('#grid-container')
     if (gridDiv) {
       this.gridApi = createGrid(gridDiv, gridOptions)
     }
 
-    // Listen for delete events
     document.addEventListener('deleteIssue', ((e: CustomEvent) => {
       this.deleteIssue(e.detail)
     }) as EventListener)

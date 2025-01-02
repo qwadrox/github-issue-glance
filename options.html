@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/icons/logo.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Github IssueGlance</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.conditional.violet.min.css"
+    />
+  </head>
+  <body>
+    <header class="pico">
+      <nav>
+        <ul>
+          <li class="logo">
+            <img src="/icons/logo.svg" width="32" height="32" alt="Github Issue Glance" />
+            <a href="/"><strong>Github Issue Glance</strong></a>
+          </li>
+        </ul>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Services</a></li>
+          <li><a href="#">Products</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <div id="issues-container"></div>
+    </main>
+    <footer class="pico">
+      <p>
+        <small>
+          <a href="https://github.com/jason-wong/github-issue-enhancer">Github Issue Glance</a>
+          is a free and open-source extension for GitHub that enhances the issue list page.
+        </small>
+      </p>
+    </footer>
+    <script type="module" src="/src/options/index.ts"></script>
+  </body>
+</html>

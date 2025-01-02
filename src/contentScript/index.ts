@@ -1,7 +1,5 @@
 import { StorageData } from '../interfaces/interfaces'
-import { isGitHubIssuesPage, isIssueDetailPage } from './url-utils'
-
-console.info('contentScript is running')
+import { getRepoNameFromUrl, isGitHubIssuesPage, isIssueDetailPage } from './url-utils'
 
 function createStarIcon(isDetailPage: boolean): HTMLElement {
   const star = document.createElement('span')
@@ -13,17 +11,22 @@ function createStarIcon(isDetailPage: boolean): HTMLElement {
   return star
 }
 
-
 async function toggleStar(issueId: string, starElement: HTMLElement): Promise<void> {
-  const storage = (await chrome.storage.local.get('starredIssues')) as StorageData
-  const starredIssues = storage.starredIssues || {}
+  const storage = (await chrome.storage.local.get('data')) as StorageData
+  const data = storage.data || []
+  const repoName = getRepoNameFromUrl()
+  
+  let repoData = data.find(item => item.repoName === repoName)
+  if (!repoData) {
+    repoData = { repoName, starredIssues: {} }
+    data.push(repoData)
+  }
 
-  const isStarred = starredIssues[issueId]?.starred
+  const isStarred = repoData.starredIssues[issueId]?.starred
 
-  // Get issue details
   const titleElement = starElement.nextElementSibling as HTMLAnchorElement
 
-  starredIssues[issueId] = {
+  repoData.starredIssues[issueId] = {
     id: issueId,
     title: titleElement?.textContent || 'Untitled Issue',
     url: titleElement?.href || window.location.href,
@@ -31,10 +34,7 @@ async function toggleStar(issueId: string, starElement: HTMLElement): Promise<vo
     timestamp: Date.now(),
   }
 
-  await chrome.storage.local.set({
-    starredIssues,
-  })
-
+  await chrome.storage.local.set({ data })
   updateStarAppearance(starElement, !isStarred)
 }
 
@@ -54,7 +54,6 @@ async function addStarToIssue(element: Element): Promise<void> {
   const issueId = element.id
   if (!issueId) return
 
-
   const existingStars = element.getElementsByClassName('github-issue-star')
   if (existingStars.length > 0) {
     for (let i = 1; i < existingStars.length; i++) {
@@ -66,9 +65,12 @@ async function addStarToIssue(element: Element): Promise<void> {
   const star = createStarIcon(false)
   star.classList.add('github-issue-star')
 
-  const storage = (await chrome.storage.local.get('starredIssues')) as StorageData
-  const starredIssues = storage.starredIssues || {}
-  updateStarAppearance(star, starredIssues[issueId]?.starred || false)
+  const storage = (await chrome.storage.local.get('data')) as StorageData
+  const data = storage.data || []
+  const repoName = getRepoNameFromUrl()
+  const repoData = data.find(item => item.repoName === repoName)
+  
+  updateStarAppearance(star, repoData?.starredIssues[issueId]?.starred || false)
 
   star.addEventListener('click', (e) => {
     e.stopPropagation()
@@ -98,10 +100,12 @@ async function addStarToIssueDetailPage(): Promise<void> {
   const star = createStarIcon(true)
   star.classList.add('github-issue-star')
 
-  const storage = (await chrome.storage.local.get('starredIssues')) as StorageData
+  const storage = (await chrome.storage.local.get('data')) as StorageData
+  const data = storage.data || []
+  const repoName = getRepoNameFromUrl()
+  const repoData = data.find(item => item.repoName === repoName)
 
-  const starredIssues = storage.starredIssues || {}
-  updateStarAppearance(star, starredIssues[issueId]?.starred || false)
+  updateStarAppearance(star, repoData?.starredIssues[issueId]?.starred || false)
 
   star.addEventListener('click', (e) => {
     e.stopPropagation()

@@ -1,4 +1,4 @@
-# gh-issue-glance
+# github-issue-glance
 
 > a chrome extension tools built with Vite + Vanilla, and Manifest v3
 
@@ -13,7 +13,7 @@
 run the command
 
 ```shell
-$ cd gh-issue-glance
+$ cd github-issue-glance
 
 $ npm run dev
 ```
@@ -21,7 +21,7 @@ $ npm run dev
 ### Chrome Extension Developer Mode
 
 1. set your Chrome browser 'Developer mode' up
-2. click 'Load unpacked', and select `gh-issue-glance/build` folder
+2. click 'Load unpacked', and select `github-issue-glance/build` folder
 
 ### Nomal FrontEnd Developer Mode
 

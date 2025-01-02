@@ -1,4 +1,4 @@
-import { isGitHubIssuesPage, isIssueDetailPage } from './url-utils'
+import { getRepoNameFromUrl, isGitHubIssuesPage, isIssueDetailPage } from './url-utils'
 
 describe('GitHub URL Validators', () => {
   let originalWindow: Window
@@ -55,6 +55,13 @@ describe('GitHub URL Validators', () => {
     it('should return false for non-numeric issue IDs', () => {
       window.location = new URL('https://github.com/owner/repo/issues/abc') as any
       expect(isIssueDetailPage()).toBe(false)
+    })
+  })
+
+  describe('getRepoNameFromUrl', () => {
+    it('should return the repo name from the URL', () => {
+      window.location = new URL('https://github.com/owner/repo/issues') as any
+      expect(getRepoNameFromUrl()).toBe('owner/repo')
     })
   })
 })

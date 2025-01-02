@@ -4,7 +4,11 @@ export function isGitHubIssuesPage(): boolean {
 }
 
 export function isIssueDetailPage(): boolean {
-  // Match URLs like: https://github.com/owner/repo/issues/123
   const pattern = /^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/
   return pattern.test(window.location.href)
+}
+
+export function getRepoNameFromUrl(): string {
+  const match = window.location.href.match(/github\.com\/([^/]+\/[^/]+)/)
+  return match ? match[1] : ''
 }

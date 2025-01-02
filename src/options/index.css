@@ -14,8 +14,8 @@
 
   color-scheme: dark;
   background-color: #242424;
-  --pico-form-element-spacing-vertical: 0;
-  --pico-form-element-spacing-horizontal: 0;
+  --pico-form-element-spacing-vertical: 5px;
+  --pico-form-element-spacing-horizontal: 5px;
 
   button {
     font-size: 0.7rem;
@@ -30,6 +30,7 @@
 
 body {
   padding: 20px;
+  margin-bottom: 100px;
 }
 
 footer {
@@ -52,5 +53,45 @@ footer {
     border-radius: 50%;
     border: 1px solid white;
     margin-right: 5px;
+  }
+}
+
+.filter-container {
+  margin-bottom: 10px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.right-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.left-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.fadein {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

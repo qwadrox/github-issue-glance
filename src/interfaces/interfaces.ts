@@ -4,8 +4,14 @@ export interface StarredIssue {
   url: string
   starred: boolean
   timestamp: number
+  repoName?: string
+}
+
+export interface StorageItem {
+  starredIssues: { [key: string]: StarredIssue }
+  repoName: string
 }
 
 export interface StorageData {
-  starredIssues: { [key: string]: StarredIssue }
+  data: StorageItem[]
 }

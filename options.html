@@ -10,6 +10,10 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.conditional.violet.min.css"
     />
+
+    <style>
+      @import "./src/options/index.css";
+    </style>
   </head>
   <body>
     <header class="pico">
@@ -21,14 +25,41 @@
           </li>
         </ul>
         <ul>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Services</a></li>
-          <li><a href="#">Products</a></li>
+          <li><a href="#settings">Settings</a></li>
+          <li><a href="#sync">Sync</a></li>
         </ul>
       </nav>
     </header>
     <main>
-      <div id="grid-container"></div>
+      <div id="pages">
+        <section id="home-page" class="page active fadein">
+          <div class="pico filter-container">
+            <label for="repo-filter">Filter by Repository:</label>
+            <select id="repo-filter" name="repo-filter"></select> 
+            <div class="button-container">
+              <div class="right-buttons">
+                <button id="clear-filters">Clear filters</button>
+                <button id="refresh-data">Refresh data</button>
+              </div>
+              <div class="left-buttons">
+                <button id="delete-all">Delete all</button>
+              </div>
+            </div>
+          </div>
+          
+          <div id="grid-container"></div>
+        </section>
+
+        <section id="settings-page" class="page fadein">
+          <h2>Settings</h2>
+          <!-- Add your settings content here -->
+        </section>
+
+        <section id="sync-page" class="page fadein">
+          <h2>Sync</h2>
+          <!-- Add your sync content here -->
+        </section>
+      </div>
     </main>
     <footer class="pico">
       <p>

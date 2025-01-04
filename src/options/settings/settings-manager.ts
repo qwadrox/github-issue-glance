@@ -3,10 +3,8 @@ import { FeatureSettings } from '../../interfaces/interfaces'
 import { notifyContentScripts } from '../notify'
 
 export class SettingsManager {
-
-
   private settings: FeatureSettings = {
-    ...defaultSettings
+    ...defaultSettings,
   }
 
   constructor() {
@@ -16,8 +14,7 @@ export class SettingsManager {
 
   private async loadSettings(): Promise<void> {
     const storage = await chrome.storage.local.get('settings')
-    this.settings.markVisited = storage.settings?.markVisited || defaultSettings.markVisited
-    this.settings.markVisitedColor = storage.settings?.markVisitedColor || defaultSettings.markVisitedColor
+    this.settings = storage.settings || defaultSettings
     this.updateUI()
   }
 
@@ -67,8 +64,8 @@ export class SettingsManager {
   private updateUI(): void {
     const form = document.getElementById('settings-form') as HTMLFormElement
     if (form) {
-      form.markVisited.checked = this.settings.markVisited || false
-      form.markVisitedColor.value = this.settings.markVisitedColor || '#806D9DFF'
+      form.markVisited.checked = this.settings.markVisited
+      form.markVisitedColor.value = this.settings.markVisitedColor
     }
   }
 }

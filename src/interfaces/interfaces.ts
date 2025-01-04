@@ -25,5 +25,5 @@ export interface FeatureSettings {
 export interface NotifyMessage {
   type: 'settingsChanged' | 'issueDeleted'
 
-  [key: string]: any 
+  [key: string]: any
 }

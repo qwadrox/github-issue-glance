@@ -9,7 +9,7 @@ class GitHubIssueManager {
 
   constructor() {
     this.issueService = IssueService.getInstance()
-    this.storageService = new StorageService();
+    this.storageService = new StorageService()
   }
 
   async modifyIssuesPage(): Promise<void> {
@@ -42,11 +42,8 @@ const manager = new GitHubIssueManager()
 manager.initialize()
 manager.observeUrlChanges()
 
-
 chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === 'settingsChanged')
-  {
-    console.log(message.settings)
+  if (message.type === 'settingsChanged') {
     IssueService.getInstance().updateSettings(message.settings)
     window.location.reload()
   }

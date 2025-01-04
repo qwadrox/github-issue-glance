@@ -3,7 +3,6 @@ import { FeatureSettings, StorageData, StorageItem } from '../../interfaces/inte
 import { getRepoNameFromUrl } from '../url-utils'
 
 export class StorageService {
-
   async getData(): Promise<StorageData> {
     try {
       const storage = (await chrome.storage.local.get('data')) as StorageData

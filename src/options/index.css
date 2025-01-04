@@ -13,7 +13,6 @@
     sans-serif;
 
   color-scheme: dark;
-  background-color: #242424;
   --pico-form-element-spacing-vertical: 5px;
   --pico-form-element-spacing-horizontal: 5px;
 
@@ -21,7 +20,7 @@
     font-size: 0.7rem;
   }
 
-  [data-tooltip]:not(a,button,input) {
+  [data-tooltip]:not(a, button, input) {
     border-bottom: none;
   }
 }
@@ -35,29 +34,6 @@
 body {
   padding: 20px;
   margin-bottom: 100px;
-}
-
-footer {
-  text-align: center;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 10px;
-  background-color: #242424;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  img {
-    background-color: white;
-    border-radius: 50%;
-    border: 1px solid white;
-    margin-right: 5px;
-  }
 }
 
 .filter-container {
@@ -85,17 +61,4 @@ footer {
 
 .page.active {
   display: block;
-}
-
-.fadein {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }

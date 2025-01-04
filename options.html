@@ -12,6 +12,7 @@
     />
 
     <style>
+      @import "./src/common.css";
       @import "./src/options/index.css";
       @import "./src/options/settings/settings.css";
     </style>
@@ -41,7 +42,7 @@
             <div class="button-container">
               <div class="right-buttons">
                 <button id="clear-filters">Clear filters</button>
-                <button id="refresh-data">Refresh data</button>
+                <button id="refresh-data">Refresh</button>
               </div>
               <div class="left-buttons">
                 <button id="clear-all">Clear all</button>
@@ -61,6 +62,7 @@
       </div>
     </main>
     <footer class="pico">
+      <button class="outline" id="testInstall" style="display: none;">Test Install Event</button>
       <p>
         <small>
           <a href="https://github.com/qwadrox/github-issue-glance">Github Issue Glance</a>

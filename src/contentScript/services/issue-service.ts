@@ -32,7 +32,7 @@ export class IssueService {
     if (!issueId) return
 
     if (this.settings.markVisited) {
-      this.updateIssueTitle(issueId, element, repoData?.issues[issueId]?.visited)
+      this.updateIssueTitle(element, repoData?.issues[issueId]?.visited)
     }
 
     const existingStars = element.getElementsByClassName('github-issue-star')
@@ -69,20 +69,17 @@ export class IssueService {
     starIcon.setStarred(isStarred)
   }
 
-  private updateIssueTitle(
-    issueId: string,
-    element: Element,
-    isVisited: boolean | undefined,
-  ): void {
+  private updateIssueTitle(element: Element, isVisited: boolean | undefined): void {
     const issueTitle = element.querySelector('a')
     if (isVisited && issueTitle) {
-      issueTitle.style.cssText =
-        `text-decoration: underline !important; color: ${this.settings.markVisitedColor} !important;`
+      issueTitle.style.cssText = `text-decoration: underline !important; color: ${this.settings.markVisitedColor} !important;`
     }
   }
 
   async modifyIssueDetailPage(): Promise<void> {
     const titleIssueSpan = document.querySelector('.gh-header-title .f1-light')
+    const titleElement = document.querySelector('.gh-header-title')
+
     const issueId = 'issue_' + titleIssueSpan?.textContent?.replace('#', '').trim()
     if (!issueId) return
 
@@ -99,18 +96,16 @@ export class IssueService {
 
     starIcon.setStarred(repoData?.issues[issueId]?.starred || false)
 
-    const titleElement = document.querySelector('.gh-header-title')
-
-    if (this.settings.markVisited && !repoData?.issues[issueId]?.visited) {
-      await this.markIssueAsVisited(issueId, titleElement)
-    }
-
     starIcon.onClick(() => {
       this.toggleStar(issueId, starIcon, titleElement)
     })
 
     if (titleElement) {
       titleElement.insertAdjacentElement('afterbegin', starIcon.getElement())
+    }
+
+    if (this.settings.markVisited && !repoData?.issues[issueId]?.visited) {
+      await this.markIssueAsVisited(issueId, titleElement)
     }
   }
 

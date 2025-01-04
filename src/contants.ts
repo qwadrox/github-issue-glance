@@ -1,4 +1,4 @@
-import { FeatureSettings } from "./interfaces/interfaces";
+import { FeatureSettings } from './interfaces/interfaces'
 
 export const defaultSettings: FeatureSettings = {
   markVisited: true,

@@ -37,5 +37,9 @@ export default defineManifest({
       resources: ['img/logo-16.png', 'img/logo-34.png', 'img/logo-48.png', 'img/logo-128.png'],
       matches: [],
     },
+    {
+      resources: ['welcome.html'],
+      matches: ['<all_urls>'],
+    },
   ],
 })

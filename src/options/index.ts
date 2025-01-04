@@ -233,4 +233,14 @@ document.addEventListener('DOMContentLoaded', () => {
     settingsPage.appendChild(createSettingsUI())
     new SettingsManager()
   }
+
+  if (process.env.NODE_ENV === 'development') {
+    const testButton = document.getElementById('testInstall')
+    if (testButton) {
+      testButton.style.display = 'block'
+      testButton.addEventListener('click', () => {
+        chrome.runtime.sendMessage({ type: 'TEST_INSTALL' })
+      })
+    }
+  }
 })

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/icons/logo.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to Github IssueGlance</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.conditional.violet.min.css"
+    />
+
+    <style>
+      @import "./src/common.css";
+      @import "./src/welcome/index.css";
+    </style>
+  </head>
+  <body class="pico container-fluid">
+    <header>
+      <nav>
+        <ul>
+          <li class="logo">
+            <img src="/icons/logo.svg" width="32" height="32" alt="Github Issue Glance" />
+            <a href="/"><strong>Github Issue Glance</strong></a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <main class="main-container">
+        <h1>Welcome</h1>
+        <p>You have the options to view your bookmarked issues and customize the settings of the extension by navigating to the <a href="/options.html">options page</a>.</p>
+        <p><strong>Just click on the extension icon in the toolbar to open the options page.</strong></p>
+        <p>I kindly ask you to create an issue on <a href="https://github.com/qwadrox/github-issue-glance/issues">Github Issue Glance</a> if you have any suggestions or feedback.</p>
+    </main>
+    <footer>
+      <p>
+        <small>
+          <a href="https://github.com/qwadrox/github-issue-glance">Github Issue Glance</a>
+          is a free and open-source extension for GitHub that enhances the issue list page.
+        </small>
+      </p>
+    </footer>
+    <script type="module" src="/src/welcome/index.ts"></script>
+  </body>
+</html>

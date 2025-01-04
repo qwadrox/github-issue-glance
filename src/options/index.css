@@ -20,6 +20,10 @@
   button {
     font-size: 0.7rem;
   }
+
+  [data-tooltip]:not(a,button,input) {
+    border-bottom: none;
+  }
 }
 
 #issues-container {

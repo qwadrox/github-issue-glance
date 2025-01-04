@@ -8,9 +8,14 @@ import {
   themeQuartz,
   ValidationModule,
 } from 'ag-grid-community'
-import { StarredIssue, StorageData } from '../interfaces/interfaces'
+import { Issue, StorageData } from '../interfaces/interfaces'
 import { ModuleRegistry } from 'ag-grid-community'
 import { ClientSideRowModelModule, TextFilterModule, DateFilterModule } from 'ag-grid-community'
+import { colorSchemeDark } from 'ag-grid-community'
+import { setupRouting } from './routing'
+import { SettingsManager } from './settings/settings-manager'
+import { createSettingsUI } from './settings/settings-ui'
+import { notifyContentScripts } from './notify'
 
 const modules = [ClientSideRowModelModule, ColumnAutoSizeModule, TextFilterModule, DateFilterModule]
 
@@ -20,13 +25,11 @@ if (import.meta.env.DEV) {
 
 ModuleRegistry.registerModules(modules)
 
-import { colorSchemeDark } from 'ag-grid-community'
-import { setupRouting } from './routing'
-
 const myTheme = themeQuartz.withPart(colorSchemeDark)
-class IssueManager {
-  private issues: StarredIssue[] = []
-  private gridApi: GridApi<StarredIssue> | undefined
+
+class IssueOptionsManager {
+  private issues: Issue[] = []
+  private gridApi: GridApi<Issue> | undefined
   private repoFilter: HTMLSelectElement | null = null
   private currentRepoName: string = ''
 
@@ -85,26 +88,7 @@ class IssueManager {
       },
     ]
 
-    this.repoFilter = document.querySelector('#repo-filter')
-    
-    this.repoFilter?.addEventListener('change', (e) => {
-      this.currentRepoName = (e.target as HTMLSelectElement).value
-      this.updateGrid()
-    })
-
-    document.getElementById('clear-filters')?.addEventListener('click', () => {
-      this.clearFilters()
-    })
-
-    document.getElementById('delete-all')?.addEventListener('click', () => {
-      this.deleteAll()
-    })
-
-    document.getElementById('refresh-data')?.addEventListener('click', () => {
-      this.loadIssues()
-    })
-
-    const gridOptions: GridOptions<StarredIssue> = {
+    const gridOptions: GridOptions<Issue> = {
       theme: myTheme,
       columnDefs,
       rowData: [],
@@ -118,6 +102,13 @@ class IssueManager {
       },
     }
 
+    this.repoFilter = document.querySelector('#repo-filter')
+
+    this.repoFilter?.addEventListener('change', (e) => {
+      this.currentRepoName = (e.target as HTMLSelectElement).value
+      this.updateGrid()
+    })
+
     const gridDiv = document.querySelector<HTMLElement>('#grid-container')
     if (gridDiv) {
       this.gridApi = createGrid(gridDiv, gridOptions)
@@ -126,6 +117,18 @@ class IssueManager {
     document.addEventListener('deleteIssue', ((e: CustomEvent) => {
       this.deleteIssue(e.detail)
     }) as EventListener)
+
+    document.getElementById('clear-filters')?.addEventListener('click', () => {
+      this.clearFilters()
+    })
+
+    document.getElementById('clear-all')?.addEventListener('click', () => {
+      this.clearAll()
+    })
+
+    document.getElementById('refresh-data')?.addEventListener('click', () => {
+      this.loadIssues()
+    })
   }
 
   private clearFilters(): void {
@@ -137,12 +140,17 @@ class IssueManager {
     this.updateGrid()
   }
 
-  private async deleteAll(): Promise<void> {
-    const confirmed = confirm('Are you sure you want to delete all starred issues? This action cannot be undone.')
+  private async clearAll(): Promise<void> {
+    const confirmed = confirm(
+      'Are you sure you want to clear all data? This action cannot be undone.',
+    )
     if (!confirmed) return
 
     this.issues = []
     await chrome.storage.local.set({ data: [] })
+    notifyContentScripts({
+      type: 'issueDeleted',
+    })
     this.updateGrid()
     this.updateRepoFilterOptions({ data: [] })
   }
@@ -157,8 +165,8 @@ class IssueManager {
     defaultOption.textContent = 'All Repositories'
     this.repoFilter.appendChild(defaultOption)
 
-    const repoNames = [...new Set(data.data.map(item => item.repoName))]
-    repoNames.forEach(repoName => {
+    const repoNames = [...new Set(data.data.map((item) => item.repoName))]
+    repoNames.forEach((repoName) => {
       const option = document.createElement('option')
       option.value = repoName
       option.textContent = repoName
@@ -172,13 +180,13 @@ class IssueManager {
 
     this.updateRepoFilterOptions(storage)
 
-    this.issues = data.flatMap(repo => 
-      Object.values(repo.starredIssues)
-        .filter(issue => issue.starred)
-        .map(issue => ({
+    this.issues = data.flatMap((repo) =>
+      Object.values(repo.issues)
+        .filter((issue) => issue.starred)
+        .map((issue) => ({
           ...issue,
-          repoName: repo.repoName
-        }))
+          repoName: repo.repoName,
+        })),
     )
 
     this.updateGrid()
@@ -189,8 +197,11 @@ class IssueManager {
     const data = storage.data || []
 
     for (const repo of data) {
-      if (id in repo.starredIssues) {
-        delete repo.starredIssues[id]
+      if (id in repo.issues) {
+        delete repo.issues[id]
+        notifyContentScripts({
+          type: 'issueDeleted',
+        })
         break
       }
     }
@@ -204,7 +215,7 @@ class IssueManager {
     if (!this.gridApi) return
 
     const filteredIssues = this.currentRepoName
-      ? this.issues.filter(issue => issue.repoName === this.currentRepoName)
+      ? this.issues.filter((issue) => issue.repoName === this.currentRepoName)
       : this.issues
 
     this.gridApi.setGridOption('rowData', filteredIssues)
@@ -212,10 +223,14 @@ class IssueManager {
   }
 }
 
-
-document.addEventListener('DOMContentLoaded', () =>
-{
-  setupRouting();
-  const manager = new IssueManager()
+document.addEventListener('DOMContentLoaded', () => {
+  setupRouting()
+  const manager = new IssueOptionsManager()
   manager.loadIssues()
+
+  const settingsPage = document.getElementById('settings-page')
+  if (settingsPage) {
+    settingsPage.appendChild(createSettingsUI())
+    new SettingsManager()
+  }
 })

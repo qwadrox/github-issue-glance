@@ -13,6 +13,7 @@
 
     <style>
       @import "./src/options/index.css";
+      @import "./src/options/settings/settings.css";
     </style>
   </head>
   <body>
@@ -32,6 +33,7 @@
     </header>
     <main>
       <div id="pages">
+
         <section id="home-page" class="page active fadein">
           <div class="pico filter-container">
             <label for="repo-filter">Filter by Repository:</label>
@@ -42,7 +44,7 @@
                 <button id="refresh-data">Refresh data</button>
               </div>
               <div class="left-buttons">
-                <button id="delete-all">Delete all</button>
+                <button id="clear-all">Clear all</button>
               </div>
             </div>
           </div>
@@ -50,14 +52,11 @@
           <div id="grid-container"></div>
         </section>
 
-        <section id="settings-page" class="page fadein">
-          <h2>Settings</h2>
-          <!-- Add your settings content here -->
-        </section>
+        <section id="settings-page" class="page fadein"></section>
 
         <section id="sync-page" class="page fadein">
           <h2>Sync</h2>
-          <!-- Add your sync content here -->
+          <p>Sync your issues to a Github repository. Coming soon.</p>
         </section>
       </div>
     </main>

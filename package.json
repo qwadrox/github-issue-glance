@@ -1,7 +1,7 @@
 {
   "name": "github-issue-glance",
-  "displayName": "Github IssueGlance",
-  "version": "0.0.0",
+  "displayName": "Github Issue Glance",
+  "version": "1.0.0",
   "author": "qwadrox",
   "description": "Helps you bookmark and manage GitHub issues with ease",
   "type": "module",

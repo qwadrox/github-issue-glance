@@ -20,7 +20,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "fmt": "prettier --write '**/*.{ts,json,css,scss,md}'",
+    "format": "prettier --write '**/*.{ts,json,css,scss,md}'",
     "format-check": "prettier --check '**/*.{ts,json,css,scss,md}'",
     "zip": "npm run build && node src/zip.js",
     "test": "jest",

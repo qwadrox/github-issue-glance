@@ -13,10 +13,15 @@ class GitHubIssueManager {
   }
 
   async modifyIssuesPage(): Promise<void> {
-    const issueElements = document.querySelectorAll('div[id^="issue_"]')
+    const issuesList = document.querySelectorAll('[data-listview-component="items-list"]')[0]
+
+    if (!issuesList || issuesList.children.length === 0) {
+      console.warn('Issues list not found')
+      return
+    }
 
     const repoData = await this.storageService.getRepoData()
-    for (const element of issueElements) {
+    for (const element of issuesList.children) {
       await this.issueService.modifyIssue(element, repoData)
     }
   }
@@ -32,8 +37,21 @@ class GitHubIssueManager {
   }
 
   observeUrlChanges(): void {
-    document.addEventListener('turbo:load', async () => {
-      await this.initialize()
+    let lastUrl = window.location.href
+
+    const observer = new MutationObserver(async (mutations) => {
+      if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href
+
+        setTimeout(async () => {
+          await this.initialize()
+        }, 300)
+      }
+    })
+
+    observer.observe(document, {
+      subtree: true,
+      childList: true,
     })
   }
 }

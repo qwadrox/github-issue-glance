@@ -17,7 +17,7 @@ export class StarIcon {
 
   private applyStyles(element: HTMLElement): void {
     element.style.cursor = 'pointer'
-    element.style.marginRight = this.isDetailPage ? '0px' : '8px'
+    element.style.marginRight = '8px'
     element.style.fontSize = this.isDetailPage ? '32px' : '16px'
     element.style.verticalAlign = this.isDetailPage ? 'text-bottom' : 'middle'
     element.style.transition = 'color 0.2s ease'

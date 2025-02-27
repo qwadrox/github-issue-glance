@@ -28,7 +28,7 @@ export class IssueService {
   }
 
   async modifyIssue(element: Element, repoData: StorageItem | undefined): Promise<void> {
-    const issueId = element.id
+    const issueId = this.extractIssueIdFromElement(element)
     if (!issueId) return
 
     if (this.settings.markVisited) {
@@ -47,13 +47,25 @@ export class IssueService {
     }
 
     starIcon = new StarIcon(false)
-    const titleElement = element.querySelector('a')
+    const titleElement = element.querySelector('h3 > a')
     if (titleElement) {
       titleElement.before(starIcon.getElement())
     }
 
     starIcon.setStarred(repoData?.issues[issueId]?.starred || false)
     starIcon.onClick(() => this.toggleStar(issueId, starIcon, titleElement))
+  }
+
+  private extractIssueIdFromElement(element: Element): string {
+    const titleLink = element.querySelector('a[href*="/issues/"]') as HTMLAnchorElement
+    if (titleLink && titleLink.href) {
+      const match = titleLink.href.match(/\/issues\/(\d+)/)
+      if (match && match[1]) {
+        return `issue_${match[1]}`
+      }
+    }
+
+    return ''
   }
 
   private async toggleStar(
@@ -70,15 +82,18 @@ export class IssueService {
   }
 
   private updateIssueTitle(element: Element, isVisited: boolean | undefined): void {
-    const issueTitle = element.querySelector('a')
+    const issueTitle = element.querySelector('h3 > a') as HTMLElement
     if (isVisited && issueTitle) {
       issueTitle.style.cssText = `text-decoration: underline !important; color: ${this.settings.markVisitedColor} !important;`
     }
   }
 
   async modifyIssueDetailPage(): Promise<void> {
-    const titleIssueSpan = document.querySelector('.gh-header-title .f1-light')
-    const titleElement = document.querySelector('.gh-header-title')
+    const titleIssueSpan = document.querySelector('[data-component="PH_Title"] > span')
+    const titleElement = document.querySelector('[data-component="PH_Title"]')
+
+    if (!titleIssueSpan || !titleElement)
+      throw new Error('Title issue span or title element not found')
 
     const issueId = 'issue_' + titleIssueSpan?.textContent?.replace('#', '').trim()
     if (!issueId) return
@@ -102,6 +117,7 @@ export class IssueService {
 
     if (titleElement) {
       titleElement.insertAdjacentElement('afterbegin', starIcon.getElement())
+      ;(titleElement as HTMLElement).style.display = 'flex'
     }
 
     if (this.settings.markVisited && !repoData?.issues[issueId]?.visited) {

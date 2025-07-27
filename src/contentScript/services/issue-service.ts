@@ -1,15 +1,18 @@
 import { StorageService } from './storage-service'
 import { StarIcon } from '../components/star-icon'
 import { FeatureSettings, StorageItem } from '../../interfaces/interfaces'
+import { defaultSettings } from '../../constants'
 
 export class IssueService {
   private static instance: IssueService
   private storageService: StorageService
-  private settings!: FeatureSettings
+  private settings: FeatureSettings
+  private settingsPromise: Promise<void>
 
   private constructor() {
     this.storageService = new StorageService()
-    this.initializeSettings()
+    this.settings = defaultSettings
+    this.settingsPromise = this.initializeSettings()
   }
 
   private async initializeSettings(): Promise<void> {
@@ -28,6 +31,8 @@ export class IssueService {
   }
 
   async modifyIssue(element: Element, repoData: StorageItem | undefined): Promise<void> {
+    await this.settingsPromise
+
     const issueId = this.extractIssueIdFromElement(element)
     if (!issueId) return
 
@@ -47,12 +52,14 @@ export class IssueService {
     }
 
     starIcon = new StarIcon(false)
-    const titleElement = element.querySelector('h3 > a')
+    const titleElement =
+      element.querySelector('h3 a[href*="/issues/"]') || element.querySelector('h3 a')
     if (titleElement) {
       titleElement.before(starIcon.getElement())
     }
 
-    starIcon.setStarred(repoData?.issues[issueId]?.starred || false)
+    const isStarred = repoData?.issues[issueId]?.starred || false
+    starIcon.setStarred(isStarred)
     starIcon.onClick(() => this.toggleStar(issueId, starIcon, titleElement))
   }
 
@@ -82,18 +89,24 @@ export class IssueService {
   }
 
   private updateIssueTitle(element: Element, isVisited: boolean | undefined): void {
-    const issueTitle = element.querySelector('h3 > a') as HTMLElement
+    const issueTitle = (element.querySelector('h3 a[href*="/issues/"]') ||
+      element.querySelector('h3 a')) as HTMLElement
+
     if (isVisited && issueTitle) {
       issueTitle.style.cssText = `text-decoration: underline !important; color: ${this.settings.markVisitedColor} !important;`
     }
   }
 
   async modifyIssueDetailPage(): Promise<void> {
+    await this.settingsPromise
+
     const titleIssueSpan = document.querySelector('[data-component="PH_Title"] > span')
     const titleElement = document.querySelector('[data-component="PH_Title"]')
 
-    if (!titleIssueSpan || !titleElement)
-      throw new Error('Title issue span or title element not found')
+    if (!titleIssueSpan || !titleElement) {
+      console.warn('Title issue span or title element not found - page may still be loading')
+      return
+    }
 
     const issueId = 'issue_' + titleIssueSpan?.textContent?.replace('#', '').trim()
     if (!issueId) return

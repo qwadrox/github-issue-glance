@@ -1,4 +1,4 @@
-import { getRepoNameFromUrl, isGitHubIssuesPage, isIssueDetailPage } from './url-utils'
+import { getRepoNameFromUrl, isGitHubIssuesPage, isIssueDetailPage, debounce } from './url-utils'
 
 describe('GitHub URL Validators', () => {
   let originalWindow: Window
@@ -63,5 +63,80 @@ describe('GitHub URL Validators', () => {
       window.location = new URL('https://github.com/owner/repo/issues') as any
       expect(getRepoNameFromUrl()).toBe('owner/repo')
     })
+  })
+})
+
+describe('debounce', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('should delay function execution', () => {
+    const mockFn = jest.fn()
+    const debouncedFn = debounce(mockFn, 100)
+
+    debouncedFn()
+    expect(mockFn).not.toHaveBeenCalled()
+
+    jest.advanceTimersByTime(50)
+    expect(mockFn).not.toHaveBeenCalled()
+
+    jest.advanceTimersByTime(50)
+    expect(mockFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should reset the timer on subsequent calls', () => {
+    const mockFn = jest.fn()
+    const debouncedFn = debounce(mockFn, 100)
+
+    debouncedFn()
+    jest.advanceTimersByTime(50)
+
+    debouncedFn() // This should reset the timer
+    jest.advanceTimersByTime(50)
+    expect(mockFn).not.toHaveBeenCalled()
+
+    jest.advanceTimersByTime(50)
+    expect(mockFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should pass arguments correctly', () => {
+    const mockFn = jest.fn()
+    const debouncedFn = debounce(mockFn, 100)
+
+    debouncedFn('arg1', 'arg2')
+    jest.advanceTimersByTime(100)
+
+    expect(mockFn).toHaveBeenCalledWith('arg1', 'arg2')
+  })
+
+  it('should cancel pending executions', () => {
+    const mockFn = jest.fn()
+    const debouncedFn = debounce(mockFn, 100)
+
+    debouncedFn()
+    jest.advanceTimersByTime(50)
+
+    debouncedFn.cancel()
+    jest.advanceTimersByTime(100)
+
+    expect(mockFn).not.toHaveBeenCalled()
+  })
+
+  it('should handle multiple cancellations safely', () => {
+    const mockFn = jest.fn()
+    const debouncedFn = debounce(mockFn, 100)
+
+    debouncedFn.cancel() // Should not throw when no timer is active
+
+    debouncedFn()
+    debouncedFn.cancel()
+    debouncedFn.cancel() // Should not throw when already cancelled
+
+    expect(mockFn).not.toHaveBeenCalled()
   })
 })

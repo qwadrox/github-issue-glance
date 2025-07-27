@@ -1,4 +1,4 @@
-import { defaultSettings } from '../../contants'
+import { defaultSettings } from '../../constants'
 import { FeatureSettings } from '../../interfaces/interfaces'
 import { notifyContentScripts } from '../notify'
 

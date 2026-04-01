@@ -48,7 +48,7 @@ jobs:
 
     - name: Package version
       id: pkg
-      run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+      run: echo "version=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
 
     - name: Upload & Release
       uses: mnao305/chrome-extension-upload@v5.0.0

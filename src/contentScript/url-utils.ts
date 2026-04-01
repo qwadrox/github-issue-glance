@@ -1,15 +1,15 @@
 export function isGitHubIssuesPage(): boolean {
-  const pattern = /^https:\/\/github\.com\/[^/]+\/[^/]+\/issues(?:\/.*|\?.*)?$/
-  return pattern.test(window.location.href)
+  const pattern = /^\/[^/]+\/[^/]+\/issues(?:\/.*)?$/
+  return pattern.test(window.location.pathname)
 }
 
 export function isIssueDetailPage(): boolean {
-  const pattern = /^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/
-  return pattern.test(window.location.href)
+  const pattern = /^\/[^/]+\/[^/]+\/issues\/\d+$/
+  return pattern.test(window.location.pathname)
 }
 
 export function getRepoNameFromUrl(): string {
-  const match = window.location.href.match(/github\.com\/([^/]+\/[^/]+)/)
+  const match = window.location.pathname.match(/^\/([^/]+\/[^/]+)/)
   return match ? match[1] : ''
 }
 

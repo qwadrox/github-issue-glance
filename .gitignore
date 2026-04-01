@@ -8,7 +8,7 @@
 
 # production
 /build
-/package
+/release
 
 # misc
 .DS_Store
@@ -21,3 +21,6 @@
 
 # secrets
 secrets.*.js
+.agents
+.agent-browser-home
+skills-lock.json

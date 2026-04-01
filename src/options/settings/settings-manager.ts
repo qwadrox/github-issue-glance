@@ -14,7 +14,10 @@ export class SettingsManager {
 
   private async loadSettings(): Promise<void> {
     const storage = await chrome.storage.local.get('settings')
-    this.settings = storage.settings || defaultSettings
+    this.settings = {
+      ...defaultSettings,
+      ...(storage.settings as Partial<FeatureSettings> | undefined),
+    }
     this.updateUI()
   }
 

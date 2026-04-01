@@ -74,6 +74,9 @@ export class StorageService {
 
   async retrieveSettings(): Promise<FeatureSettings> {
     const storage = await chrome.storage.local.get('settings')
-    return storage.settings || defaultSettings
+    return {
+      ...defaultSettings,
+      ...(storage.settings as Partial<FeatureSettings> | undefined),
+    }
   }
 }

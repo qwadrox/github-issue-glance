@@ -3,6 +3,13 @@ import { StarIcon } from '../components/star-icon'
 import { FeatureSettings, StorageItem } from '../../interfaces/interfaces'
 import { defaultSettings } from '../../constants'
 
+const LIST_ROW_SELECTOR = 'main li[role="listitem"]'
+const LIST_TITLE_LINK_SELECTOR = 'a[data-testid="issue-pr-title-link"][href*="/issues/"]'
+const LIST_TITLE_FALLBACK_SELECTOR = 'h3 a[href*="/issues/"]'
+const DETAIL_TITLE_SELECTOR = 'h1[data-component="PH_Title"]'
+const DETAIL_TITLE_TEXT_SELECTOR = '[data-testid="issue-title"]'
+const STAR_SELECTOR = '.github-issue-star'
+
 export class IssueService {
   private static instance: IssueService
   private storageService: StorageService
@@ -30,49 +37,86 @@ export class IssueService {
     this.settings = settings
   }
 
-  async modifyIssue(element: Element, repoData: StorageItem | undefined): Promise<void> {
+  async modifyIssuesListPage(): Promise<void> {
     await this.settingsPromise
 
-    const issueId = this.extractIssueIdFromElement(element)
-    if (!issueId) return
+    const repoData = await this.storageService.getRepoData()
+    const issueElements = this.getIssueElements()
 
-    if (this.settings.markVisited) {
-      this.updateIssueTitle(element, repoData?.issues[issueId]?.visited)
+    for (const element of issueElements) {
+      this.renderIssueRow(element, repoData)
     }
-
-    const existingStars = element.getElementsByClassName('github-issue-star')
-    for (let i = 1; i < existingStars.length; i++) {
-      existingStars[i].remove()
-    }
-
-    let starIcon: StarIcon
-    if (existingStars.length > 0) {
-      const existingStarElement = existingStars[0] as HTMLElement
-      existingStarElement.remove()
-    }
-
-    starIcon = new StarIcon(false)
-    const titleElement =
-      element.querySelector('h3 a[href*="/issues/"]') || element.querySelector('h3 a')
-    if (titleElement) {
-      titleElement.before(starIcon.getElement())
-    }
-
-    const isStarred = repoData?.issues[issueId]?.starred || false
-    starIcon.setStarred(isStarred)
-    starIcon.onClick(() => this.toggleStar(issueId, starIcon, titleElement))
   }
 
-  private extractIssueIdFromElement(element: Element): string {
-    const titleLink = element.querySelector('a[href*="/issues/"]') as HTMLAnchorElement
-    if (titleLink && titleLink.href) {
-      const match = titleLink.href.match(/\/issues\/(\d+)/)
-      if (match && match[1]) {
-        return `issue_${match[1]}`
+  private getIssueElements(): Element[] {
+    return Array.from(document.querySelectorAll(LIST_ROW_SELECTOR)).filter((element) =>
+      Boolean(this.getIssueTitleLink(element)),
+    )
+  }
+
+  private renderIssueRow(element: Element, repoData: StorageItem | undefined): void {
+    const titleLink = this.getIssueTitleLink(element)
+    if (!titleLink) return
+
+    const issueId = this.extractIssueIdFromHref(titleLink.href)
+    if (!issueId) return
+
+    this.updateIssueTitle(titleLink, repoData?.issues[issueId]?.visited)
+
+    const starIcon = this.ensureListStar(element, titleLink, issueId)
+    const isStarred = repoData?.issues[issueId]?.starred || false
+
+    starIcon.setStarred(isStarred)
+    starIcon.setClickHandler(() => {
+      void this.toggleStar(issueId, starIcon, titleLink)
+    })
+  }
+
+  private getIssueTitleLink(element: ParentNode): HTMLAnchorElement | null {
+    return (
+      element.querySelector(LIST_TITLE_LINK_SELECTOR) ||
+      element.querySelector(LIST_TITLE_FALLBACK_SELECTOR)
+    ) as HTMLAnchorElement | null
+  }
+
+  private ensureListStar(
+    element: Element,
+    titleLink: HTMLAnchorElement,
+    issueId: string,
+  ): StarIcon {
+    const existingStars = Array.from(
+      element.querySelectorAll<HTMLButtonElement>(STAR_SELECTOR),
+    )
+    const reusableStarElement = existingStars[0]
+    const starIcon = reusableStarElement
+      ? StarIcon.fromElement(reusableStarElement, false)
+      : new StarIcon(false)
+    const starElement = starIcon.getElement()
+
+    starElement.dataset.issueId = issueId
+    if (
+      starElement.parentElement !== titleLink.parentElement ||
+      starElement.nextElementSibling !== titleLink
+    ) {
+      titleLink.before(starElement)
+    }
+
+    for (const extraStar of existingStars) {
+      if (extraStar !== starElement) {
+        extraStar.remove()
       }
     }
 
-    return ''
+    return starIcon
+  }
+
+  private extractIssueIdFromHref(href: string): string {
+    const normalizedHref = href.startsWith('http')
+      ? href
+      : new URL(href, window.location.origin).href
+    const match = normalizedHref.match(/\/issues\/(\d+)/)
+
+    return match?.[1] ? `issue_${match[1]}` : ''
   }
 
   private async toggleStar(
@@ -82,60 +126,81 @@ export class IssueService {
   ): Promise<void> {
     const isStarred = await this.storageService.toggleIssueStarred(
       issueId,
-      titleElement?.textContent || 'Untitled Issue',
+      titleElement?.textContent?.trim() || 'Untitled Issue',
       (titleElement as HTMLAnchorElement)?.href || window.location.href,
     )
     starIcon.setStarred(isStarred)
   }
 
-  private updateIssueTitle(element: Element, isVisited: boolean | undefined): void {
-    const issueTitle = (element.querySelector('h3 a[href*="/issues/"]') ||
-      element.querySelector('h3 a')) as HTMLElement
-
-    if (isVisited && issueTitle) {
-      issueTitle.style.cssText = `text-decoration: underline !important; color: ${this.settings.markVisitedColor} !important;`
+  private updateIssueTitle(issueTitle: HTMLElement, isVisited: boolean | undefined): void {
+    if (this.settings.markVisited && isVisited) {
+      issueTitle.style.setProperty('text-decoration', 'underline', 'important')
+      issueTitle.style.setProperty('color', this.settings.markVisitedColor, 'important')
+      return
     }
+
+    issueTitle.style.removeProperty('text-decoration')
+    issueTitle.style.removeProperty('color')
   }
 
   async modifyIssueDetailPage(): Promise<void> {
     await this.settingsPromise
 
-    const titleIssueSpan = document.querySelector('[data-component="PH_Title"] > span')
-    const titleElement = document.querySelector('[data-component="PH_Title"]')
+    const titleElement = document.querySelector(DETAIL_TITLE_SELECTOR) as HTMLElement | null
+    const titleTextElement = titleElement?.querySelector(
+      DETAIL_TITLE_TEXT_SELECTOR,
+    ) as HTMLElement | null
 
-    if (!titleIssueSpan || !titleElement) {
-      console.warn('Title issue span or title element not found - page may still be loading')
+    if (!titleElement) {
       return
     }
 
-    const issueId = 'issue_' + titleIssueSpan?.textContent?.replace('#', '').trim()
+    const issueId = this.extractIssueIdFromHref(window.location.href)
     if (!issueId) return
 
-    const existingStars = document.getElementsByClassName('github-issue-star')
-    if (existingStars.length > 0) {
-      for (let i = 1; i < existingStars.length; i++) {
-        existingStars[i].remove()
-      }
-      return
-    }
-
-    const starIcon = new StarIcon(true)
     const repoData = await this.storageService.getRepoData()
+    const starIcon = this.ensureDetailStar(titleElement, titleTextElement, issueId)
 
     starIcon.setStarred(repoData?.issues[issueId]?.starred || false)
-
-    starIcon.onClick(() => {
-      this.toggleStar(issueId, starIcon, titleElement)
+    starIcon.setClickHandler(() => {
+      void this.toggleStar(issueId, starIcon, titleTextElement || titleElement)
     })
 
-    if (titleElement) {
-      titleElement.insertAdjacentElement('afterbegin', starIcon.getElement())
-      ;(titleElement as HTMLElement).style.display = 'flex'
+    if (this.settings.markVisited && !repoData?.issues[issueId]?.visited) {
+      await this.markIssueAsVisited(issueId, titleTextElement || titleElement)
+    }
+  }
+
+  private ensureDetailStar(
+    titleElement: HTMLElement,
+    titleTextElement: HTMLElement | null,
+    issueId: string,
+  ): StarIcon {
+    const existingStars = Array.from(
+      titleElement.querySelectorAll<HTMLButtonElement>(STAR_SELECTOR),
+    )
+    const reusableStarElement = existingStars[0]
+    const starIcon = reusableStarElement
+      ? StarIcon.fromElement(reusableStarElement, true)
+      : new StarIcon(true)
+    const starElement = starIcon.getElement()
+
+    starElement.dataset.issueId = issueId
+    const insertionTarget = titleTextElement || titleElement.firstElementChild || titleElement
+    if (
+      starElement.parentElement !== insertionTarget.parentElement ||
+      starElement.nextElementSibling !== insertionTarget
+    ) {
+      insertionTarget.before(starElement)
     }
 
-    if (this.settings.markVisited && !repoData?.issues[issueId]?.visited) {
-      await this.markIssueAsVisited(issueId, titleElement)
+    for (const extraStar of existingStars) {
+      if (extraStar !== starElement) {
+        extraStar.remove()
+      }
     }
+
+    return starIcon
   }
 
   private async markIssueAsVisited(issueId: string, titleElement: Element | null): Promise<void> {

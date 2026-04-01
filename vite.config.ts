@@ -1,10 +1,18 @@
+import * as path from 'node:path'
 import { defineConfig } from 'vite'
 import { crx } from '@crxjs/vite-plugin'
+import zip from 'vite-plugin-zip-pack'
 import manifest from './src/manifest'
+import { name, version } from './package.json'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(() => {
   return {
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+      },
+    },
     build: {
       emptyOutDir: true,
       outDir: 'build',
@@ -23,7 +31,17 @@ export default defineConfig(({ mode }) => {
       hmr: {
         port: 5173,
       },
+      cors: {
+        origin: [/chrome-extension:\/\//],
+      },
     },
-    plugins: [crx({ manifest })],
+    plugins: [
+      crx({ manifest }),
+      zip({
+        inDir: 'build',
+        outDir: 'release',
+        outFileName: `crx-${name}-${version}.zip`,
+      }),
+    ],
   }
 })

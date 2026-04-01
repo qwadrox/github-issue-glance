@@ -1,66 +1,71 @@
 import { getRepoNameFromUrl, isGitHubIssuesPage, isIssueDetailPage, debounce } from './url-utils'
 
 describe('GitHub URL Validators', () => {
-  let originalWindow: Window
-
   beforeEach(() => {
-    originalWindow = window
-
-    delete (window as any).location
-    window.location = new URL('https://github.com/owner/repo/issues') as any
-  })
-
-  afterEach(() => {
-    window = originalWindow as typeof window
+    window.history.replaceState({}, '', 'https://github.com/owner/repo/issues')
   })
 
   describe('isGitHubIssuesPage', () => {
     it('should return true for main issues page', () => {
-      window.location = new URL('https://github.com/owner/repo/issues') as any
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/issues')
       expect(isGitHubIssuesPage()).toBe(true)
     })
 
     it('should return true for issues page with query parameters', () => {
-      window.location = new URL('https://github.com/owner/repo/issues?q=is%3Aissue') as any
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/issues?q=is%3Aissue')
       expect(isGitHubIssuesPage()).toBe(true)
     })
 
     it('should return true for specific issue pages', () => {
-      window.location = new URL('https://github.com/owner/repo/issues/123') as any
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/issues/123')
+      expect(isGitHubIssuesPage()).toBe(true)
+    })
+
+    it('should return true for issue pages with hash fragments', () => {
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/issues#top')
       expect(isGitHubIssuesPage()).toBe(true)
     })
 
     it('should return false for non-issues pages', () => {
-      window.location = new URL('https://github.com/owner/repo/pulls') as any
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/pulls')
       expect(isGitHubIssuesPage()).toBe(false)
     })
   })
 
   describe('isIssueDetailPage', () => {
     it('should return true for specific issue page', () => {
-      window.location = new URL('https://github.com/owner/repo/issues/123') as any
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/issues/123')
+      expect(isIssueDetailPage()).toBe(true)
+    })
+
+    it('should return true for issue detail pages with query parameters and hash fragments', () => {
+      window.history.replaceState(
+        {},
+        '',
+        'https://github.com/owner/repo/issues/123?focused=true#issuecomment-1',
+      )
       expect(isIssueDetailPage()).toBe(true)
     })
 
     it('should return false for main issues page', () => {
-      window.location = new URL('https://github.com/owner/repo/issues') as any
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/issues')
       expect(isIssueDetailPage()).toBe(false)
     })
 
     it('should return false for issues with query parameters', () => {
-      window.location = new URL('https://github.com/owner/repo/issues?q=is%3Aissue') as any
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/issues?q=is%3Aissue')
       expect(isIssueDetailPage()).toBe(false)
     })
 
     it('should return false for non-numeric issue IDs', () => {
-      window.location = new URL('https://github.com/owner/repo/issues/abc') as any
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/issues/abc')
       expect(isIssueDetailPage()).toBe(false)
     })
   })
 
   describe('getRepoNameFromUrl', () => {
     it('should return the repo name from the URL', () => {
-      window.location = new URL('https://github.com/owner/repo/issues') as any
+      window.history.replaceState({}, '', 'https://github.com/owner/repo/issues')
       expect(getRepoNameFromUrl()).toBe('owner/repo')
     })
   })

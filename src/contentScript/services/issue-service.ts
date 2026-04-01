@@ -73,10 +73,8 @@ export class IssueService {
   }
 
   private getIssueTitleLink(element: ParentNode): HTMLAnchorElement | null {
-    return (
-      element.querySelector(LIST_TITLE_LINK_SELECTOR) ||
-      element.querySelector(LIST_TITLE_FALLBACK_SELECTOR)
-    ) as HTMLAnchorElement | null
+    return (element.querySelector(LIST_TITLE_LINK_SELECTOR) ||
+      element.querySelector(LIST_TITLE_FALLBACK_SELECTOR)) as HTMLAnchorElement | null
   }
 
   private ensureListStar(
@@ -84,9 +82,7 @@ export class IssueService {
     titleLink: HTMLAnchorElement,
     issueId: string,
   ): StarIcon {
-    const existingStars = Array.from(
-      element.querySelectorAll<HTMLButtonElement>(STAR_SELECTOR),
-    )
+    const existingStars = Array.from(element.querySelectorAll<HTMLButtonElement>(STAR_SELECTOR))
     const reusableStarElement = existingStars[0]
     const starIcon = reusableStarElement
       ? StarIcon.fromElement(reusableStarElement, false)

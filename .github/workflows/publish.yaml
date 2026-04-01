@@ -3,7 +3,7 @@ name: Publish Chrome Extension
 on:
   push:
     tags:
-      - 'V*'
+      - "V*"
   workflow_dispatch:
 
 jobs:
@@ -12,49 +12,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Checkout latest V* tag (manual runs)
-      if: github.event_name == 'workflow_dispatch'
-      run: |
-        git fetch --tags --force
-        TAG=$(git tag -l 'V*' --sort=-v:refname | head -n1)
-        if [ -z "$TAG" ]; then
-          echo "::error::No tag matching V* found. Create a tag first (e.g. push a V* tag)."
-          exit 1
-        fi
-        echo "Using tag: $TAG"
-        git checkout "$TAG"
-    
-    - uses: pnpm/action-setup@v4
-      with:
-        version: latest
-        
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '>=18.17.0'
-        cache: 'pnpm'
-    
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      - name: Checkout latest V* tag (manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch --tags --force
+          TAG=$(git tag -l 'V*' --sort=-v:refname | head -n1)
+          if [ -z "$TAG" ]; then
+            echo "::error::No tag matching V* found. Create a tag first (e.g. push a V* tag)."
+            exit 1
+          fi
+          echo "Using tag: $TAG"
+          git checkout "$TAG"
 
-    - name: Format check
-      run: pnpm run format-check
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
 
-    - name: Build and Zip
-      run: pnpm run zip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ">=18.17.0"
+          cache: "pnpm"
 
-    - name: Package version
-      id: pkg
-      run: echo "version=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-    - name: Upload & Release
-      uses: mnao305/chrome-extension-upload@v5.0.0
-      with:
-        file-path: release/crx-github-issue-glance-${{ steps.pkg.outputs.version }}.zip
-        extension-id: ${{ secrets.EXTENSION_ID }}
-        client-id: ${{ secrets.CLIENT_ID }}
-        client-secret: ${{ secrets.CLIENT_SECRET }}
-        refresh-token: ${{ secrets.REFRESH_TOKEN }}
+      - name: Format check
+        run: pnpm run format-check
+
+      - name: Build and Zip
+        run: pnpm run zip
+
+      - name: Package version
+        id: pkg
+        run: echo "version=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+
+      - name: Upload & Release
+        uses: mnao305/chrome-extension-upload@v6.0.0
+        with:
+          file-path: release/crx-github-issue-glance-${{ steps.pkg.outputs.version }}.zip
+          extension-id: ${{ secrets.EXTENSION_ID }}
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+          refresh-token: ${{ secrets.REFRESH_TOKEN }}

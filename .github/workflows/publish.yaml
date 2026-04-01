@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'V*'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,6 +13,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Checkout latest V* tag (manual runs)
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        git fetch --tags --force
+        TAG=$(git tag -l 'V*' --sort=-v:refname | head -n1)
+        if [ -z "$TAG" ]; then
+          echo "::error::No tag matching V* found. Create a tag first (e.g. push a V* tag)."
+          exit 1
+        fi
+        echo "Using tag: $TAG"
+        git checkout "$TAG"
     
     - uses: pnpm/action-setup@v4
       with:
